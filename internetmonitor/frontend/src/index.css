@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ============================================================
+   ITMokel Design System — Colors & Typography
+   ============================================================ */
+
+:root {
+  /* Backgrounds */
+  --color-bg-base:        #0D1117;
+  --color-bg-surface:     #161B22;
+  --color-bg-elevated:    #1c2128;
+  --color-bg-hover:       #2d333b;
+  --color-bg-code:        #0a0a0a;
+
+  /* Brand */
+  --color-blue:           #3A7CA5;
+  --color-cyan:           #5FB3CE;
+
+  /* Borders */
+  --color-border:         #333333;
+  --color-border-muted:   #222222;
+  --color-border-strong:  #444c56;
+
+  /* Text */
+  --color-text-primary:   #E6EDF3;
+  --color-text-secondary: #cdd9e5;
+  --color-text-muted:     #8b949e;
+  --color-text-faint:     #666666;
+  --color-text-disabled:  #444444;
+
+  /* Feedback */
+  --color-success:        #22c55e;
+  --color-success-text:   #6bff6b;
+  --color-success-bg:     #1a2e1a;
+  --color-success-border: #2d5a2d;
+
+  --color-warning:        #fbbf24;
+  --color-warning-text:   #ffc107;
+  --color-warning-bg:     #2e281a;
+  --color-warning-border: #5a4a2d;
+
+  --color-error:          #ef4444;
+  --color-error-text:     #ff6b6b;
+  --color-error-bg:       #2e1a1a;
+  --color-error-border:   #5a2d2d;
+
+  --color-info:           #5FB3CE;
+  --color-info-bg:        rgba(58,124,165,0.15);
+  --color-info-border:    rgba(58,124,165,0.3);
+
+  /* Gradients */
+  --gradient-brand:       linear-gradient(135deg, #3A7CA5 0%, #5FB3CE 100%);
+  --gradient-header-bg:   linear-gradient(135deg, rgba(58,124,165,0.15) 0%, rgba(95,179,206,0.1) 50%, transparent 100%);
+
+  /* Glow / focus */
+  --glow-blue:            0 0 0 2px rgba(58,124,165,0.2);
+  --glow-cyan:            0 0 0 2px rgba(95,179,206,0.3);
+  --shadow-card-hover:    0 4px 12px rgba(58,124,165,0.15);
+
+  /* Semantic */
+  --color-link:               var(--color-blue);
+  --color-link-hover:         var(--color-cyan);
+  --color-interactive:        var(--color-blue);
+  --color-interactive-hover:  var(--color-cyan);
+  --color-card-bg:            var(--color-bg-surface);
+  --color-card-border:        var(--color-border);
+  --color-input-bg:           var(--color-bg-surface);
+  --color-input-border:       #444444;
+  --color-input-focus:        var(--color-blue);
+
+  /* Spacing */
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Border radius */
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:  12px;
+  --radius-pill: 100px;
+
+  /* Typography */
+  --font-body:  Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-mono:  'JetBrains Mono', 'Consolas', 'Monaco', monospace;
+
+  --text-xs:   0.75rem;
+  --text-sm:   0.8rem;
+  --text-base: 0.875rem;
+  --text-md:   1rem;
+  --text-lg:   1.1rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+
+  --leading-tight:   1.2;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.7;
+
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-semibold:600;
+  --weight-bold:    700;
+
+  /* Transitions */
+  --transition-fast:   150ms ease;
+  --transition-normal: 200ms ease;
+
+  /* -------------------------------------------------------
+     Backward-compat aliases (existing App.css references)
+     ------------------------------------------------------- */
+  --bg-dark:       var(--color-bg-base);
+  --bg-card:       var(--color-bg-surface);
+  --bg-secondary:  var(--color-bg-elevated);
+  --primary:       var(--color-blue);
+  --accent:        var(--color-cyan);
+  --text-primary:  var(--color-text-primary);
+  --text-secondary:var(--color-text-muted);
+  --text-muted:    var(--color-text-muted);
+  --border:        var(--color-border);
+  --success:       var(--color-success);
+  --warning:       var(--color-warning);
+  --danger:        var(--color-error);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: var(--leading-normal);
+  font-weight: var(--weight-regular);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+h1 { font-size: 1.75rem; font-weight: var(--weight-bold);     line-height: var(--leading-tight); }
+h2 { font-size: 1.25rem; font-weight: var(--weight-semibold); }
+h3 { font-size: 1rem;    font-weight: var(--weight-semibold); }
+h4 { font-size: 0.95rem; font-weight: var(--weight-semibold); }
+
+p { font-size: var(--text-md); line-height: var(--leading-relaxed); color: var(--color-text-secondary); }
+
+code, .mono {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+}
+
+a {
+  color: var(--color-link);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover { color: var(--color-link-hover); }
+
+button {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+button:hover { background-color: var(--color-bg-hover); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+button.primary {
+  background: var(--gradient-brand);
+  border-color: transparent;
+  color: #fff;
+}
+button.primary:hover:not(:disabled) { opacity: 0.88; }
+
+button.danger {
+  background-color: var(--color-error);
+  border-color: var(--color-error);
+  color: #fff;
+}
+button.danger:hover:not(:disabled) { opacity: 0.8; }
+
+input, select {
+  background-color: var(--color-input-bg);
+  border: 1px solid var(--color-input-border);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--text-base);
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  transition: border-color var(--transition-fast);
+}
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--color-input-focus);
+  box-shadow: var(--glow-blue);
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar        { width: 8px; height: 8px; }
+::-webkit-scrollbar-track  { background: var(--color-bg-base); }
+::-webkit-scrollbar-thumb  { background: var(--color-border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }

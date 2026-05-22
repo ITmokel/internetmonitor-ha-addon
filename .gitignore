@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Frontend build output — built by the Dockerfile, not committed
+dist/
+
+# Environment files
+.env
+.env.*
+
+# Database
+*.db
+*.sqlite
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude Code
+.claude/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/

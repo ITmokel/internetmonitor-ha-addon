@@ -1,0 +1,24 @@
+name: "Internet Monitor"
+description: "Monitor your internet connection with ping tests, speedtests, DNS lookups, and public IP tracking"
+version: "1.0.14"
+slug: "internetmonitor"
+url: "https://github.com/ITmokel/internetmonitor-ha-addon"
+arch:
+  - amd64
+  - aarch64
+  - armv7
+init: false
+homeassistant_api: false
+host_network: true
+ports:
+  3000/tcp: 3000
+ports_description:
+  3000/tcp: "Web interface"
+map:
+  - addon_config:rw
+  - data:rw
+options: {}
+schema: {}
+# All settings are managed via the web interface (Configuration tab).
+# For local builds, comment out image line
+# image: "ghcr.io/yourusername/internetmonitor-{arch}:latest"

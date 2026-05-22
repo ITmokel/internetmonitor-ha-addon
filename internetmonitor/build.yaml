@@ -1,0 +1,4 @@
+build_from:
+  amd64: node:22-alpine
+  aarch64: node:22-alpine
+  armv7: node:22-alpine
