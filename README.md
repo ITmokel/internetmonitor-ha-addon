@@ -2,6 +2,8 @@
 
 Monitor your internet connection with continuous ping tests, speedtests, DNS lookups, and public IP tracking.
 
+![Internet Monitor Dashboard](docs/screenshot.png)
+
 ## Installation
 
 1. Go to **Settings** → **Apps** → **Install app**
