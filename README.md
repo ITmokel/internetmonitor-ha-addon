@@ -4,12 +4,12 @@ Monitor your internet connection with continuous ping tests, speedtests, DNS loo
 
 ## Installation
 
-1. Go to **Settings** → **Add-ons** → **Add-on Store**
+1. Go to **Settings** → **Apps** → **Install app**
 2. Click the menu (⋮) → **Repositories** and add:
    ```
    https://github.com/ITmokel/internetmonitor-ha-addon
    ```
-3. Find **Internet Monitor** in the store and click **Install**
+3. Find **Internet Monitor** and click **Install**
 4. Click **Start**
 5. Open the web interface at `http://homeassistant.local:3000`
 
