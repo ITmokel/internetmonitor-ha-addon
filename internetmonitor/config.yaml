@@ -8,7 +8,7 @@ arch:
   - aarch64
   - armv7
 init: false
-homeassistant_api: false
+homeassistant_api: true
 host_network: true
 ports:
   3000/tcp: 3000

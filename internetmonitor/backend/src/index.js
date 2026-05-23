@@ -8,6 +8,7 @@ import { startPingService } from './services/ping.js';
 import { startSpeedtestService } from './services/speedtest.js';
 import { startDnsService } from './services/dns.js';
 import { startPublicIpService } from './services/publicip.js';
+import { startHaSyncService } from './services/hasync.js';
 import { cleanupOldData } from './database.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -46,6 +47,7 @@ app.listen(PORT, () => {
   startSpeedtestService();
   startDnsService();
   startPublicIpService();
+  startHaSyncService();
 
   // Schedule daily cleanup at 3 AM
   cron.schedule('0 3 * * *', () => {
