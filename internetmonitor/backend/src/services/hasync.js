@@ -26,6 +26,11 @@ async function setState(entityId, state, attributes = {}) {
   }
 }
 
+function safeMs(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
 // Ping event format: [{ target: { id, name, host }, alive, time, packetLoss }]
 // DB format:         [{ target_id, target_name, target_host, alive, time_ms }]
 function normalizePingResults(results) {
@@ -34,7 +39,7 @@ function normalizePingResults(results) {
     name: r.target?.name ?? r.target_name,
     host: r.target?.host ?? r.target_host,
     alive: r.alive,
-    latency: r.time ?? r.time_ms,
+    latency: safeMs(r.time ?? r.time_ms),
   }));
 }
 
@@ -45,7 +50,7 @@ async function syncPing(results) {
 
   for (const r of normalized) {
     const slug = slugify(r.name);
-    const latency = r.alive && r.latency != null ? Number(r.latency).toFixed(1) : 'unavailable';
+    const latency = r.alive && r.latency != null ? r.latency.toFixed(1) : 'unavailable';
     const uptime = uptimeMap[r.id];
     const uptimePct = uptime?.total > 0
       ? (uptime.alive_count / uptime.total * 100).toFixed(1)
@@ -111,12 +116,14 @@ async function syncSpeedtest(result) {
   });
 }
 
-// DNS event: array of { domain, time_ms, success }
+// DNS event format: [{ domain, timeMs, success }]  (camelCase from service)
+// DB format:        [{ domain, time_ms, success }]  (snake_case from SQLite)
 async function syncDns(results) {
   if (!results?.length) return;
   const successful = results.filter(d => d.success);
-  const avg = successful.length > 0
-    ? (successful.reduce((s, d) => s + d.time_ms, 0) / successful.length).toFixed(1)
+  const times = successful.map(d => safeMs(d.timeMs ?? d.time_ms)).filter(v => v != null);
+  const avg = times.length > 0
+    ? (times.reduce((s, v) => s + v, 0) / times.length).toFixed(1)
     : 'unavailable';
 
   await setState('sensor.internetmonitor_dns_latency', avg, {
