@@ -57,6 +57,21 @@ const baseChartOptions = {
   },
 };
 
+// Shortest gap that still breaks the line — anything below this is normal jitter
+const MIN_SPAN_GAP_MS = 300000;
+
+// The backend downsamples long ranges into time buckets, so the spacing between
+// points grows with the selected range (up to ~13 min for 7d). A fixed gap limit
+// would break every single segment there and the chart would render empty, so the
+// limit is derived from the actual spacing of the data.
+function computeSpanGaps(times) {
+  if (times.length < 3) return MIN_SPAN_GAP_MS;
+  const deltas = [];
+  for (let i = 1; i < times.length; i++) deltas.push(times[i] - times[i - 1]);
+  deltas.sort((a, b) => a - b);
+  return Math.max(MIN_SPAN_GAP_MS, deltas[Math.floor(deltas.length / 2)] * 3);
+}
+
 function buildPingChartDatasets(pingResults, targets) {
   if (!pingResults?.length || !targets.length) return { datasets: [] };
 
@@ -75,26 +90,28 @@ function buildPingChartDatasets(pingResults, targets) {
   });
 
   const batchIds = Object.keys(batchGroups).map(Number).sort((a, b) => a - b);
+  const batchTimes = batchIds.map(id => parseUTCTimestamp(batchTimestamps[id]));
+  const spanGaps = computeSpanGaps(batchTimes);
 
   const datasets = targets.map((target, i) => ({
     label: target.name,
-    data: batchIds.map(id => ({
-      x: parseUTCTimestamp(batchTimestamps[id]),
+    data: batchIds.map((id, idx) => ({
+      x: batchTimes[idx],
       y: batchGroups[id]?.[target.id] ?? null,
     })),
     borderColor: PING_COLORS[i % PING_COLORS.length],
     backgroundColor: PING_COLORS[i % PING_COLORS.length] + '20',
     tension: 0.3,
     fill: false,
-    spanGaps: 300000,
+    spanGaps,
     pointRadius: 0,
   }));
 
-  const averageData = batchIds.map(id => {
+  const averageData = batchIds.map((id, idx) => {
     const vals = Object.values(batchGroups[id]).filter(v => typeof v === 'number' && v > 0);
     if (!vals.length) return null;
     return {
-      x: parseUTCTimestamp(batchTimestamps[id]),
+      x: batchTimes[idx],
       y: Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 100) / 100,
     };
   });
@@ -110,7 +127,7 @@ function buildPingChartDatasets(pingResults, targets) {
         borderDash: [5, 5],
         tension: 0.3,
         fill: false,
-        spanGaps: 300000,
+        spanGaps,
         pointRadius: 0,
         order: 0,
       },

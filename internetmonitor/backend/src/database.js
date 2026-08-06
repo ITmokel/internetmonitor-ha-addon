@@ -181,14 +181,20 @@ export function getAllPingResultsDownsampled(minutes, maxBatches = 800) {
     return getAllPingResults(minutes);
   }
 
+  // The bucket size is inlined as an integer literal on purpose: better-sqlite3
+  // binds JS numbers as REAL, so "epoch / ?" would be a floating point division
+  // and every row would end up in its own bucket (no downsampling, and the
+  // targets of one batch would no longer share a batch_id).
+  const bucket = Math.max(1, Math.round(bucketSeconds));
+
   return db.prepare(`
     SELECT
       pr.target_id,
-      CAST(strftime('%s', pr.timestamp) AS INTEGER) / ? AS batch_id,
+      CAST(strftime('%s', pr.timestamp) AS INTEGER) / ${bucket} AS batch_id,
       MAX(pr.alive) AS alive,
       ROUND(AVG(CASE WHEN pr.alive = 1 THEN pr.time_ms END), 2) AS time_ms,
       datetime(
-        (CAST(strftime('%s', pr.timestamp) AS INTEGER) / ?) * ?,
+        (CAST(strftime('%s', pr.timestamp) AS INTEGER) / ${bucket}) * ${bucket},
         'unixepoch'
       ) AS timestamp,
       pt.name AS target_name,
@@ -196,9 +202,9 @@ export function getAllPingResultsDownsampled(minutes, maxBatches = 800) {
     FROM ping_results pr
     JOIN ping_targets pt ON pr.target_id = pt.id
     WHERE pr.timestamp > datetime('now', '-' || ? || ' minutes')
-    GROUP BY pr.target_id, CAST(strftime('%s', pr.timestamp) AS INTEGER) / ?
+    GROUP BY pr.target_id, CAST(strftime('%s', pr.timestamp) AS INTEGER) / ${bucket}
     ORDER BY timestamp ASC
-  `).all(bucketSeconds, bucketSeconds, bucketSeconds, minutes, bucketSeconds);
+  `).all(minutes);
 }
 
 // SQL-aggregate uptime/latency per target — fast regardless of data volume
