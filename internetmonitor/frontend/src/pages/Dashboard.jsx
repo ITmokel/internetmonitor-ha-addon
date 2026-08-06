@@ -32,6 +32,13 @@ const TIME_RANGES = [
   { value: 168, label: '7d' },
 ];
 
+const SPEEDTEST_TIME_RANGES = [
+  { value: 1, label: '1h' },
+  { value: 6, label: '6h' },
+  { value: 24, label: '1d' },
+  { value: 168, label: '7d' },
+];
+
 function formatTimeRange(hours) {
   if (hours < 1) return `${Math.round(hours * 60)} minutes`;
   if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''}`;
@@ -136,9 +143,13 @@ function buildPingChartDatasets(pingResults, targets) {
   };
 }
 
+// Safety cap only — the selected time range already bounds the query, this just
+// guards against pathological configs (e.g. a 1-minute speedtest interval over 7d).
+const SPEEDTEST_CHART_POINT_LIMIT = 500;
+
 function buildSpeedtestChartData(speedtestResults) {
   if (!speedtestResults?.length) return { datasets: [] };
-  const items = [...speedtestResults].reverse().slice(-20);
+  const items = [...speedtestResults].reverse().slice(-SPEEDTEST_CHART_POINT_LIMIT);
   return {
     datasets: [
       {
@@ -173,7 +184,9 @@ export default function Dashboard() {
   const { formatDateTime, chartTimeFormats } = useLocale();
   const [loading, setLoading] = useState(true);
   const [pingChartLoading, setPingChartLoading] = useState(true);
+  const [speedtestChartLoading, setSpeedtestChartLoading] = useState(true);
   const [timeRange, setTimeRange] = useState(1);
+  const [speedtestTimeRange, setSpeedtestTimeRange] = useState(24);
   const [runningSpeedtest, setRunningSpeedtest] = useState(false);
   const [speedtestProgress, setSpeedtestProgress] = useState(null);
   const [showSpeedtestResult, setShowSpeedtestResult] = useState(null);
@@ -218,7 +231,6 @@ export default function Dashboard() {
       setAvgDnsTime(status.avgDnsTime);
       setLatestPublicIp(status.latestPublicIp);
       setPublicIpChanges(status.publicIpChanges || 0);
-      setSpeedtestChartData(buildSpeedtestChartData(status.speedtestResults));
 
       setChartNow(Date.now());
       setPingChartData(buildPingChartDatasets(chart.pingResults, status.targets));
@@ -229,6 +241,19 @@ export default function Dashboard() {
       setPingChartLoading(false);
     }
   }, [timeRange]);
+
+  const fetchSpeedtestChart = useCallback(async () => {
+    setSpeedtestChartLoading(true);
+    try {
+      const results = await api.getSpeedtestResults(speedtestTimeRange);
+      setChartNow(Date.now());
+      setSpeedtestChartData(buildSpeedtestChartData(results));
+    } catch (err) {
+      console.error('Failed to fetch speedtest chart data:', err);
+    } finally {
+      setSpeedtestChartLoading(false);
+    }
+  }, [speedtestTimeRange]);
 
   const addPingResults = useCallback((results, currentTargets) => {
     if (!results?.length || !currentTargets.length) return;
@@ -273,10 +298,11 @@ export default function Dashboard() {
       const ts = raw
         ? (raw.includes('T') ? new Date(raw).getTime() : parseUTCTimestamp(raw))
         : Date.now();
+      const minTime = Date.now() - speedtestTimeRange * 3600000;
       const newDl = { x: ts, y: result.download != null ? parseFloat(result.download.toFixed(2)) : null };
       const newUl = { x: ts, y: result.upload != null ? parseFloat(result.upload.toFixed(2)) : null };
-      const dl = [...(prev.datasets[0]?.data ?? []), newDl].slice(-20);
-      const ul = [...(prev.datasets[1]?.data ?? []), newUl].slice(-20);
+      const dl = [...(prev.datasets[0]?.data ?? []), newDl].filter(p => p.x >= minTime);
+      const ul = [...(prev.datasets[1]?.data ?? []), newUl].filter(p => p.x >= minTime);
       return {
         datasets: [
           { ...(prev.datasets[0] ?? {}), data: dl },
@@ -284,12 +310,16 @@ export default function Dashboard() {
         ],
       };
     });
-  }, []);
+  }, [speedtestTimeRange]);
 
   useEffect(() => {
     setChartNow(Date.now());
     fetchAllData();
   }, [fetchAllData]);
+
+  useEffect(() => {
+    fetchSpeedtestChart();
+  }, [fetchSpeedtestChart]);
 
   // SSE with exponential backoff
   useEffect(() => {
@@ -356,6 +386,11 @@ export default function Dashboard() {
     return () => clearInterval(id);
   }, [fetchAllData]);
 
+  useEffect(() => {
+    const id = setInterval(fetchSpeedtestChart, 300000);
+    return () => clearInterval(id);
+  }, [fetchSpeedtestChart]);
+
   const handleRunSpeedtest = async () => {
     try { await api.runSpeedtest(); }
     catch (err) { console.error('Failed to start speedtest:', err); setRunningSpeedtest(false); }
@@ -409,6 +444,8 @@ export default function Dashboard() {
     scales: {
       x: {
         type: 'time',
+        min: chartNow - speedtestTimeRange * 3600000,
+        max: chartNow,
         grid: { color: CT.grid },
         ticks: { color: CT.ticks, maxTicksLimit: 8 },
         time: { displayFormats: chartTimeFormats },
@@ -580,9 +617,18 @@ export default function Dashboard() {
         <div className="card">
           <div className="card-header">
             <h3 className="card-title">Speed Test History</h3>
-            <button className="primary" onClick={handleRunSpeedtest} disabled={runningSpeedtest}>
-              {runningSpeedtest ? 'Running...' : 'Run Speedtest'}
-            </button>
+            <div className="chart-controls">
+              <div className="time-range-selector">
+                {SPEEDTEST_TIME_RANGES.map(r => (
+                  <button key={r.label} className={speedtestTimeRange === r.value ? 'active' : ''} onClick={() => setSpeedtestTimeRange(r.value)}>
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+              <button className="primary" onClick={handleRunSpeedtest} disabled={runningSpeedtest}>
+                {runningSpeedtest ? 'Running...' : 'Run Speedtest'}
+              </button>
+            </div>
           </div>
 
           {runningSpeedtest && (
@@ -662,7 +708,9 @@ export default function Dashboard() {
           )}
 
           <div className="chart-container" style={{ display: (runningSpeedtest || showSpeedtestResult) ? 'none' : 'block' }}>
-            {hasSpeedtestData ? (
+            {speedtestChartLoading ? (
+              <div className="loading"><div className="spinner"></div>Loading chart...</div>
+            ) : hasSpeedtestData ? (
               <Line ref={speedtestChartRef} data={speedtestChartData} options={speedtestOptions} />
             ) : (
               <div className="empty-state">No speedtest data yet</div>

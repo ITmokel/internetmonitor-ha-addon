@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import * as db from '../database.js';
 
-const SPEEDTEST_CHART_LIMIT = 50;
-
 // Simple in-memory rate limiter for expensive / destructive endpoints
 const rateBuckets = new Map();
 function rateLimit(key, maxRequests, windowMs) {
@@ -239,9 +237,6 @@ router.get('/dashboard', (req, res) => {
     avgLatencyByTarget[row.target_id] = row.avg_latency ?? null;
   });
 
-  // Last 7 days of speedtest results for the chart (capped)
-  const speedtestResults = db.getSpeedtestResults(168).slice(0, SPEEDTEST_CHART_LIMIT);
-
   // DNS data
   const latestDns = db.getLatestDnsResults();
   const successfulDns = latestDns.filter(d => d.success);
@@ -260,7 +255,6 @@ router.get('/dashboard', (req, res) => {
     targets,
     uptimeByTarget,
     avgLatencyByTarget,
-    speedtestResults,
     latestDns,
     avgDnsTime,
     latestPublicIp,
