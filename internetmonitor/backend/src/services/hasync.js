@@ -173,7 +173,18 @@ export function startHaSyncService() {
   // Push current state immediately on startup so sensors appear right away
   const latestPings = db.getLatestPingResults();
   if (latestPings.length) syncPing(latestPings);
+  resyncStored();
 
+  // States set through the REST API are not restored when Home Assistant
+  // restarts. Pings come back on their own within a minute, but the speedtest
+  // sensors would stay missing until the next speedtest and the public IP until
+  // it changes, so the last known values are pushed again on a timer.
+  setInterval(resyncStored, RESYNC_INTERVAL_MS);
+}
+
+const RESYNC_INTERVAL_MS = 5 * 60 * 1000;
+
+function resyncStored() {
   const latestSpeedtest = db.getLatestSpeedtest();
   if (latestSpeedtest) syncSpeedtest(dbSpeedtestToEvent(latestSpeedtest));
 

@@ -1,6 +1,6 @@
 name: "Internet Monitor"
 description: "Monitor your internet connection with ping tests, speedtests, DNS lookups, and public IP tracking"
-version: "1.0.18"
+version: "1.0.19"
 slug: "internetmonitor"
 url: "https://github.com/ITmokel/internetmonitor-ha-addon"
 arch:
